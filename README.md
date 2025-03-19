@@ -47,7 +47,7 @@ The datasets used in these projects are from **Kaggle**:
   - LSTM (TensorFlow/Keras) for sequence-based prediction models
 
  ## Project Structure
-book-recommendation-sentiment-analysis/
+```book-recommendation-sentiment-analysis/
 │
 ├── data/
 │   ├── goodreads_reviews.csv
@@ -83,6 +83,7 @@ book-recommendation-sentiment-analysis/
 │
 ├── requirements.txt
 └── README.md
+```
 
 ## Getting Started
 
