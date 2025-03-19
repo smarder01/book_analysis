@@ -50,9 +50,12 @@ The datasets used in these projects are from **Kaggle**:
 ```book-recommendation-sentiment-analysis/
 │
 ├── data/
-│   ├── goodreads_reviews.csv
-│   ├── goodreads_books.csv
-│   └── other_datasets.csv
+│   ├── book_tags.csv
+│   ├── books.csv
+│   ├── raings.csv
+│   ├── sample_book.xml
+│   ├── tags.csv
+│   ├── to_read.csv
 │
 ├── sentiment-analysis/
 │   ├── __init__.py
