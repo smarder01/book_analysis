@@ -1,86 +1,142 @@
-import pickle
 import pandas as pd
 import numpy as np
-from surprise import Dataset, Reader, SVD
 from sklearn.metrics.pairwise import cosine_similarity
-from content_based_filtering import load_books_data, compute_similarity
+import pickle
+from surprise import SVD, Dataset, Reader
+from surprise.model_selection import train_test_split
 
-# Load Data
-books_df = load_books_data()
-ratings_df = pd.read_csv("data/processed_ratings.csv")
+# Load preprocessed books data
+def load_books_data():
+    print("\n--- Loading Books Data ---")
+    try:
+        books = pd.read_csv("data/processed_books.csv")
+        print(f"Books Data Loaded! Shape: {books.shape}")
+        return books
+    except FileNotFoundError:
+        print("Error: Processed books file not found.")
+        exit()
 
-# Load Collaborative Filtering Model (SVD)
-def load_svd_model():
-    with open("models/svd_model.pkl", "rb") as f:
-        return pickle.load(f)
+# Load collaborative filtering model
+def load_cf_model():
+    print("\n--- Loading Collaborative Filtering Model ---")
+    try:
+        with open("book-recommendation-system/models/svd_model.pkl", "rb") as f:
+            cf_model = pickle.load(f)
+        print("Collaborative Filtering Model Loaded!")
+        return cf_model
+    except FileNotFoundError:
+        print("Error: Collaborative Filtering model file not found.")
+        exit()
 
-svd_model = load_svd_model()
+# Load content-based similarity matrix
+def load_cb_similarity():
+    print("\n--- Loading Content-Based Filtering Similarity Matrix ---")
+    try:
+        with open("book-recommendation-system/models/book_similarity.pkl", "rb") as f:
+            cb_similarity = pickle.load(f)
+        print("Content-Based Filtering Similarity Matrix Loaded!")
+        return cb_similarity
+    except FileNotFoundError:
+        print("Error: Content-Based Filtering similarity matrix file not found.")
+        exit()
 
-# Load Content-Based Similarity Matrix
-with open("models/book_similarity.pkl", "rb") as f:
-    content_similarity = pickle.load(f)
+# Get top-N similar books based on content-based filtering
+def get_cb_similar_books(book_title, books, cb_similarity, top_n=10):
+    print(f"\nFinding Books Similar to: {book_title} (Content-Based Filtering)")
 
-def get_collaborative_recommendations(user_id, num_recs=10):
-    """Generate book recommendations for a user using the collaborative filtering model."""
-    book_ids = books_df["book_id"].unique()
-    predictions = [(book_id, svd_model.predict(user_id, book_id).est) for book_id in book_ids]
-    predictions.sort(key=lambda x: x[1], reverse=True)  # Sort by predicted rating
-    return [book_id for book_id, _ in predictions[:num_recs]]
+    # Ensure book title exists
+    if book_title not in books["title"].values:
+        print(f"Error: Book '{book_title}' not found in dataset.")
+        return []
 
-def get_content_recommendations(book_id, num_recs=5):
-    """Get content-based recommendations based on similarity scores."""
-    # Sort the similarity scores for the given book_id
-    similar_books = sorted(enumerate(content_similarity[book_id]), key=lambda x: x[1], reverse=True)
+    # Find the index of the given book
+    book_idx = books.index[books["title"] == book_title].tolist()[0]
 
-    # Filter out the book_id itself from recommendations
-    similar_books = [book for book in similar_books if book[0] != book_id]
+    # Get similarity scores for the book and sort them
+    similarity_scores = list(enumerate(cb_similarity[book_idx]))
+    similarity_scores = sorted(similarity_scores, key=lambda x: x[1], reverse=True)
 
-    # Get the top N recommendations
-    recommendations = similar_books[:num_recs]
+    # Get top N similar books
+    top_books = []
+    for i, (index, score) in enumerate(similarity_scores[1:top_n + 1], 1):  # Skip self-match
+        book_info = books.iloc[index]
+        top_books.append((book_info["title"], book_info["authors"], round(score, 4)))
+
+    return top_books
+
+# Get top-N similar books based on collaborative filtering
+def get_cf_similar_books(book_id, cf_model, top_n=10):
+    print(f"\nFinding Books Similar to: {book_id} (Collaborative Filtering)")
+
+    # Get the books that have been rated by users
+    books_rated_by_users = cf_model.trainset.all_items()
+
+    # Get predictions for the book from the CF model
+    predictions = []
+    for other_book_id in books_rated_by_users:
+        prediction = cf_model.predict(book_id, other_book_id)
+        predictions.append((other_book_id, prediction.est))
+
+    # Sort predictions based on estimated ratings
+    predictions = sorted(predictions, key=lambda x: x[1], reverse=True)
+
+    # Get top N recommended books
+    top_books = []
+    for i, (book_id, rating) in enumerate(predictions[:top_n]):
+        top_books.append((book_id, round(rating, 4)))
+
+    return top_books
+
+# Hybrid recommendation system (50% CF, 50% CBF)
+def hybrid_recommendation(book_title, books, cb_similarity, cf_model, top_n=10):
+    # Get book_id for the given book title
+    book_id = books[books["title"] == book_title].index[0]
+
+    # Get top-N similar books from content-based filtering
+    cb_books = get_cb_similar_books(book_title, books, cb_similarity, top_n)
+
+    # Get top-N similar books from collaborative filtering
+    cf_books = get_cf_similar_books(book_id, cf_model, top_n)
+
+    # Combine the results
+    hybrid_books = {}
     
-    return recommendations
+    for title, author, similarity in cb_books:
+        hybrid_books[title] = {"author": author, "cb_similarity": similarity, "cf_similarity": 0}
 
-def hybrid_recommend(user_id, book_id, alpha=0.5, num_recs=5):
-    # Get content-based recommendations
-    content_recs = get_content_recommendations(book_id, num_recs) if book_id else []
+    for book_id, cf_rating in cf_books:
+        book_title = books.iloc[book_id]["title"]
+        if book_title in hybrid_books:
+            hybrid_books[book_title]["cf_similarity"] = cf_rating
+        else:
+            hybrid_books[book_title] = {"author": books.iloc[book_id]["authors"], "cb_similarity": 0, "cf_similarity": cf_rating}
 
-    # Generate collaborative filtering recommendations using the SVD model
-    collaborative_recs = []
-    if book_id:
-        # Generate collaborative recommendations by predicting ratings
-        for _, row in books_df.iterrows():
-            book_id_collab = row['book_id']
-            predicted_rating = svd_model.predict(user_id, book_id_collab).est
-            collaborative_recs.append((book_id_collab, predicted_rating))
+    # Combine CF and CBF similarities
+    hybrid_books_with_scores = []
+    for title, info in hybrid_books.items():
+        combined_score = 0.5 * info["cb_similarity"] + 0.5 * info["cf_similarity"]
+        hybrid_books_with_scores.append(
+            {"title": title, "author": info["author"], "score": combined_score}
+        )
 
-    # Combine recommendations using the alpha weight
-    combined_recs = []
-    for content_book, content_sim in content_recs:
-        for collab_book, collab_sim in collaborative_recs:
-            if content_book == collab_book:
-                combined_score = alpha * content_sim + (1 - alpha) * collab_sim
-                combined_recs.append((content_book, combined_score))
+    # Sort books based on the combined score
+    return sorted(hybrid_books_with_scores, key=lambda x: x["score"], reverse=True)[:top_n]
 
-    # Sort the combined recommendations by the score
-    combined_recs = sorted(combined_recs, key=lambda x: x[1], reverse=True)
-
-    # Return top N recommendations
-    final_recs = combined_recs[:num_recs]
-
-    # Fetch book information for the top recommendations
-    recommended_books = []
-    for book, _ in final_recs:
-        book_info = books_df[books_df["book_id"] == book]  # Corrected here (no subscript needed)
-        recommended_books.append(book_info)
-
-    return recommended_books
-
-# Example Usage
+# Main script execution
 if __name__ == "__main__":
-    user_id = 314  # Example user
-    book_id = 1    # Example book
-    recommendations = hybrid_recommend(user_id, book_id, alpha=0.5)
-    print("\n📚 Hybrid Recommendations:")
-    for i, book in enumerate(recommendations, 1):
-        title = book["title"].values[0] if not book.empty else "Unknown Title"  # Corrected here
-        print(f"{i}. {title}")
+    # Load necessary data
+    books = load_books_data()
+    cf_model = load_cf_model()
+    cb_similarity = load_cb_similarity()
+
+    # Example: Get hybrid recommendations for a given book title
+    book_title = "Reckless"
+    hybrid_books = hybrid_recommendation(book_title, books, cb_similarity, cf_model)
+
+    # Display the results
+    print("\n📚 Hybrid Book Recommendations:")
+    for i, book in enumerate(hybrid_books, 1):
+        title = book["title"]
+        author = book["author"]
+        combined_score = book["score"]
+        print(f"{i}. {title} by {author} (Combined Score: {combined_score:.4f})")

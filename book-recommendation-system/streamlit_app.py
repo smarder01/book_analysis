@@ -1,43 +1,48 @@
 import streamlit as st
 import pandas as pd
 import pickle
-from content_based_filtering import load_books_data
-from hybrid_recommendation import hybrid_recommend
+from hybrid_recommendation import hybrid_recommendation  # Assuming you saved this function in a separate file
 
-# load books data
-books_df = load_books_data()
+# Load data and models
+@st.cache(allow_output_mutation=True)
+def load_data():
+    # Load the necessary data
+    books = pd.read_csv('data/processed_books.csv')  # Adjust path as necessary
+    return books
 
-# streamlit app title
-st.title("Book Reccomendation System")
+@st.cache(allow_output_mutation=True)
+def load_models():
+    # Load content-based filtering similarity matrix
+    with open("book-recommendation-system/models/book_similarity.pkl", "rb") as f:
+        cb_similarity = pickle.load(f)
+    
+    # Load collaborative filtering model
+    with open("book-recommendation-system/models/svd_model.pkl", "rb") as f:
+        cf_model = pickle.load(f)
 
-# user input
-# select a book
-st.subheader("Select a Book for Recommendations:")
-book_options = books_df["title"].tolist()
-book_id = st.selectbox("Choose a Book:", book_options)
+    return cb_similarity, cf_model
 
-# alpha slider: adjust the influence of collaborative vs content-based filtering
-st.subheader("Adjust the Weight Between Recommendation Methods")
+# Streamlit UI
+st.title("Book Recommendation System")
+
+# Instructions
 st.write("""
-Content-based filtering recommends books similar to the one you've selected, based on its features like genre, author, or keywords.
-Collaborative filtering recommends books based on the preferences of other users who have similar tastes to yours.
-
-Use the slider to adjust how much you want the recommendations to rely on each method:
-- A higher weight for content-based filtering will prioritize books with similar themes or genres.
-- A higher weight for collaborative filtering will suggest books liked by users who share your preferences.
+    This app recommends books based on a hybrid recommendation system, combining content-based filtering 
+    and collaborative filtering. Enter a book title, and we'll show you similar books!
 """)
-alpha = st.slider("Adjust the weight between content-based and collaborative recommendations:", 0.0, 1.0, 0.5)
 
-# button to get recs
-if st.button("Get Recommendations"):
-    # get book id for the selected book
-    book_id_selected = books_df[books_df["title"] == book_id].iloc[0]["book_id"]
+# Load data and models
+books = load_data()
+cb_similarity, cf_model = load_models()
 
-    # get hybrid recs
-    recommendations = hybrid_recommend(user_id = None, book_id = book_id_selected, alpha = alpha)
+# User input for book title
+book_title = st.text_input("Enter a Book Title", "")
 
-    # display recs
-    st.subheader("Recommended Books:")
-    for i, book_info in enumerate(recommendations, 1):
-        book_title = book_info["title"].values[0] if not book_info.empty else "Unknown Title"
-        st.write(f"{i}. {book_title}")
+if book_title:
+    # Get recommendations
+    st.write(f"Recommendations for: **{book_title}**")
+    hybrid_books = hybrid_recommendation(book_title, books, cb_similarity, cf_model)
+    
+    # Display recommendations
+    for i, book in enumerate(hybrid_books):
+        st.write(f"{i+1}. {book['title']} by {book['authors']} (Rating: {book['rating_score']})")

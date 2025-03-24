@@ -14,17 +14,17 @@ def load_books_data():
         print("Error: Processed books file not found.")
         exit()
 
-# Preprocess tag_name column
-def preprocess_tags(books):
-    if "tag_name" not in books.columns:
-        print("Error: 'tag_name' column not found in dataset.")
+# Preprocess genres column
+def preprocess_genres(books):
+    if "genres" not in books.columns:
+        print("Error: 'genres' column not found in dataset.")
         return books
 
-    # Replace '|' with spaces and fill missing values
-    books["tag_name"] = books["tag_name"].fillna("").str.replace("|", " ")
+    # Fill missing genres and replace commas with spaces
+    books["genres"] = books["genres"].fillna("").str.replace(",", " ")
 
-    print("\nSample Book Tags (After Processing):")
-    print(books["tag_name"].head(10))  # Show first 10 processed tags
+    print("\nSample Book Genres (After Processing):")
+    print(books["genres"].head(10))  # Show first 10 processed genres
 
     return books
 
@@ -32,14 +32,15 @@ def preprocess_tags(books):
 def compute_similarity(books):
     print("\n--- Computing Book Similarity ---")
 
-    # Preprocess tags
-    books = preprocess_tags(books)
+    # Preprocess genres
+    books = preprocess_genres(books)
 
     # Combine multiple features into one "metadata" column
     books["metadata"] = (
         books["title"].fillna("") + " " +
         books["authors"].fillna("") + " " +
-        books["tag_name"].fillna("")
+        books["genres"].fillna("") + " " +
+        books["description"].fillna("")  # Using description for more detail
     )
 
     # Convert metadata into TF-IDF features
@@ -81,11 +82,12 @@ if __name__ == "__main__":
     books = load_books_data()
     books, cosine_sim = compute_similarity(books)
 
-    # Example: Find books similar to "The Hobbit"
-    book_title = "The Hunger Games (The Hunger Games, #1)"
+    # Example: Find books similar to "The Hunger Games"
+    book_title = "Reckless"
     similar_books = get_similar_books(book_title, books, cosine_sim)
+    
     # Save similarity matrix
-    with open("models/book_similarity.pkl", "wb") as f:
+    with open("book-recommendation-system/models/book_similarity.pkl", "wb") as f:
         pickle.dump(cosine_sim, f)
 
     # Print results
