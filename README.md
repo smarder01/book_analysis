@@ -1,17 +1,12 @@
-# Bookish Bytes: Sentiment & Recommendation Magic 📖✨🔮
-Book Recommendation and Sentiment Analysis Projects
+# Bookish Bytes: Recommendation & Rating Prediction Magic 📖✨🔮
+Book Recommendation and Rating Prediction Projects
 
-Welcome to the **Book Recommendation and Sentiment Analysis** repository! This collection of projects focuses on natural language processing (NLP) and machine learning techniques to analyze book reviews, recommend books, and predict book ratings. The repository contains three primary projects:
+Welcome to the **Book Recommendation and Rating Prediction** repository! This collection of projects focuses on machine learning techniques to recommend books and predict book ratings. The repository contains two primary projects:
 
-1. **Book Review Sentiment Analysis (NLP)**: Classify book reviews as positive or negative.
-2. **Personalized Book Recommendation System**: Recommend books based on a user's past reading history.
-3. **Predict a Book's Rating Before It Gets Reviews**: Predict a book's rating based on features like title, author, genre, and description.
+1. **Personalized Book Recommendation System**: Recommend books based on a user's past reading history.
+2. **Predict a Book's Rating Before It Gets Reviews**: Predict a book's rating based on features like title, author, genre, and description.
 
 ## Project Goals
-
-- **Book Review Sentiment Analysis**: 
-  - Use NLP techniques to analyze book reviews and classify them as positive or negative.
-  - Experiment with traditional machine learning models and transformer models like BERT for improved accuracy.
 
 - **Personalized Book Recommendation System**: 
   - Recommend books to users based on their past reading history using collaborative and content-based filtering methods.
@@ -25,15 +20,31 @@ Welcome to the **Book Recommendation and Sentiment Analysis** repository! This c
 
 The datasets used in these projects are from **Kaggle**:
 
-- **Goodreads Reviews Dataset**: For sentiment analysis.
-- **Goodreads Books Dataset**: For the recommendation system and rating prediction.
+- **Ultimate Book Collection: Top 100 Books up to 2023**: For both the recommendation system and rating prediction.
+
+### Basic Information About the Data
+
+- **isbn**: ISBN codes of the book.
+- **title**: Titles of the book.
+- **series_title**: Titles of the series to which some books belong.
+- **series_release_number**: Release numbers of the series for some books.
+- **authors**: Authors of the book.
+- **publisher**: Publishers of the book.
+- **language**: Language in which the book is written.
+- **description**: Descriptions of the book.
+- **num_pages**: Number of pages of the book.
+- **format**: Formats of the book (paperback, e-book, etc.).
+- **genres**: Genres to which the book belongs.
+- **publication_date**: Publication dates of the book.
+- **rating_score**: Rating score of the book.
+- **num_ratings**: Number of ratings received by the book.
+- **num_reviews**: Number of reviews of the book.
+- **current_readers**: Current number of readers of the book.
+- **want_to_read**: Number of people interested in reading the book.
+- **price**: Prices of the book.
+- **url**: URLs of the book.
 
 ## Tech Stack
-
-- **NLP and Sentiment Analysis**: 
-  - NLTK for text preprocessing
-  - Scikit-learn for sentiment classification models
-  - TensorFlow/PyTorch (optional for deep learning models like BERT)
 
 - **Recommendation System**:
   - Pandas for data manipulation
@@ -46,22 +57,13 @@ The datasets used in these projects are from **Kaggle**:
   - Scikit-learn for regression models
   - LSTM (TensorFlow/Keras) for sequence-based prediction models
 
- ## Project Structure
-```book-recommendation-sentiment-analysis/
+## Project Structure
+```bash
+book-recommendation-rating-prediction/
 │
 ├── data/
-│   ├── book_tags.csv
-│   ├── books.csv
-│   ├── raings.csv
-│   ├── sample_book.xml
-│   ├── tags.csv
-│   ├── to_read.csv
-│
-├── sentiment-analysis/
-│   ├── preprocess.py
-│   ├── train_model.py
-│   ├── evaluate_model.py
-│   └── README.md
+│   ├── goodreads_top100_from1980to2023_final.csv
+│   ├── processed_books.csv
 │
 ├── book-recommendation-system/
 │   ├── preprocess.py
@@ -81,14 +83,3 @@ The datasets used in these projects are from **Kaggle**:
 │
 ├── requirements.txt
 └── README.md
-```
-
-## Getting Started
-
-Install the necessary libraries:
-pip install -r requirements.txt
-
-To get started with any of the projects, clone this repository to your local machine:
-
-```bash
-git clone https://github.com/your-username/book-recommendation-sentiment-analysis.git
