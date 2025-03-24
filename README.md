@@ -58,11 +58,9 @@ The datasets used in these projects are from **Kaggle**:
 │   ├── to_read.csv
 │
 ├── sentiment-analysis/
-│   ├── __init__.py
 │   ├── preprocess.py
 │   ├── train_model.py
 │   ├── evaluate_model.py
-│   ├── utils.py
 │   └── README.md
 │
 ├── book-recommendation-system/
@@ -75,12 +73,10 @@ The datasets used in these projects are from **Kaggle**:
 │   └── README.md
 │
 ├── rating-prediction/
-│   ├── __init__.py
 │   ├── preprocess.py
 │   ├── feature_extraction.py
 │   ├── train_model.py
 │   ├── evaluate_model.py
-│   ├── utils.py
 │   └── README.md
 │
 ├── requirements.txt
