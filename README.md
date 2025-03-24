@@ -66,13 +66,12 @@ The datasets used in these projects are from **Kaggle**:
 │   └── README.md
 │
 ├── book-recommendation-system/
-│   ├── __init__.py
 │   ├── preprocess.py
 │   ├── collaborative_filtering.py
 │   ├── content_based_filtering.py
-│   ├── train_model.py
+│   ├── hybrid_recommendation.py
 │   ├── evaluate_model.py
-│   ├── utils.py
+│   ├── streamlit_app.py
 │   └── README.md
 │
 ├── rating-prediction/
