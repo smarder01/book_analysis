@@ -4,7 +4,7 @@
 The goal of this project is to build a personalized book recommendation system that suggests books based on a user's past reading history. By analyzing user preferences and applying machine learning techniques, this system aims to recommend books tailored to each individual's unique reading tastes.
 
 ## Project Overview
-This project uses a combination of content-based filtering, collaborative filtering, and deep learning techniques to recommend books. By leveraging user data from Goodreads, the system is designed to offer personalized book suggestions based on what users have liked in the past. Additionally, a Streamlit web app will be built to allow users to input books they enjoy and receive recommendations in real-time.
+This project uses a combination of content-based filtering, collaborative filtering, and deep learning techniques to recommend books. By leveraging user data from Goodreads, the system is designed to offer personalized book suggestions based on what users have liked in the past. Additionally, a Streamlit web app allows users to input books they enjoy and receive recommendations in real-time.
 
 Key Features:
 - **Content-based filtering**: Recommends books based on similarity to books the user has already liked.
@@ -14,6 +14,8 @@ Key Features:
 
 ## Dataset
 The dataset used for this project is from the **Goodreads Books** dataset available on Kaggle. This dataset contains information about books, including their titles, authors, genres, and user ratings. The dataset is rich with features that enable us to implement various recommendation techniques.
+
+Currently, the dataset contains books with ratings and user activity, but I am actively looking for a more up-to-date dataset with more recent book information to improve the system's recommendations.
 
 ### Dataset includes:
 - Book information (title, author, genres)
@@ -39,13 +41,14 @@ This project uses a combination of the following technologies:
     ```
 3. Run the Streamlit app:
     ```bash
-    streamlit run app.py
+    streamlit run book-recommendation-system/streamlit_app.py
     ```
 
 ## Future Enhancements
 - Improve recommendation accuracy by fine-tuning models.
 - Add more advanced features such as user profiles and book summaries.
 - Explore other recommendation algorithms and hybrid methods.
+- Integrate a more recent and comprehensive book dataset to enhance recommendations.
 
 ## License
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
